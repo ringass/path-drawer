@@ -5,64 +5,75 @@ use path::*;
 const DEPTH: i32 = 0;
 #[macroquad::main("STO'x pathplanning")]
 async fn main() {
-    let mut traject_flag = false;
-    let mut enemies_flag = false;
-    let mut trajectory_points: Vec<Vector2<f32>> = vec![];
-    let mut enemies: Vec<Vector2<f32>> = vec![];
-    let mut path: Vec<Vector2<f32>> = vec![];
-    let mut env: Option<Environment> = None;
+    let mut setup = Setup {
+        enemies: vec![],
+        env: None,
+        path: vec![],
+        key_points: vec![],
+        state: LoopState::InitialSelection,
+    };
 
     loop {
         clear_background(Color::new(22.0 / 255.0, 24.0 / 255.0, 24.0 / 255.0, 0.91));
 
-        //left mouse to define start and goal points
-        if is_mouse_button_pressed(MouseButton::Left) && !traject_flag {
-            trajectory_points.push(Vector2::new(mouse_position().0, mouse_position().1));
+        match setup.state {
+            LoopState::InitialSelection => {
+                //left mouse to define start and goal points
+                if is_mouse_button_pressed(MouseButton::Left) {
+                    setup
+                        .key_points
+                        .push(Vector2::new(mouse_position().0, mouse_position().1));
 
-            if trajectory_points.len() == 2 {
-                traject_flag = true;
+                    if setup.key_points.len() == 2 {
+                        setup.state = LoopState::EnemiesSelection;
+                    }
+                }
             }
-        }
+            LoopState::EnemiesSelection => {
+                //left mouse to define the 3 enemy robots
+                if is_mouse_button_pressed(MouseButton::Right) {
+                    setup
+                        .enemies
+                        .push(Vector2::new(mouse_position().0, mouse_position().1));
 
-        //left mouse to define the 3 enemy robots
-        if is_mouse_button_pressed(MouseButton::Right) && !enemies_flag && traject_flag {
-            enemies.push(Vector2::new(mouse_position().0, mouse_position().1));
+                    if setup.enemies.len() == 3 && setup.env.is_none() {
+                        setup.env = Some(Environment {
+                            enemies: [setup.enemies[0], setup.enemies[1], setup.enemies[2]],
+                        });
 
-            if enemies.len() == 3 {
-                enemies_flag = true;
+                        setup.path = build_path_plan(
+                            setup.env.as_ref().unwrap(),
+                            setup.key_points.clone(),
+                            DEPTH,
+                        );
+
+                        setup.state = LoopState::Ready;
+                    }
+                }
             }
-        }
-
-        //start path planning
-        if traject_flag && enemies_flag && env.is_none() {
-            env = Some(Environment {
-                enemies: [enemies[0], enemies[1], enemies[2]],
-            });
-
-            path = build_path_plan(env.as_ref().unwrap(), trajectory_points.clone(), DEPTH);
+            LoopState::Ready => {}
         }
 
         //reset window
         if is_key_pressed(KeyCode::R) {
-            trajectory_points.clear();
-            enemies.clear();
-            path.clear();
-            env = None;
-            traject_flag = false;
-            enemies_flag = false;
+            setup.key_points.clear();
+            setup.enemies.clear();
+            setup.path.clear();
+            setup.env = None;
+            setup.state = LoopState::InitialSelection;
         }
 
-        draw_path(path.clone(), enemies.clone(), trajectory_points.clone());
-        draw_text_center(enemies_flag, traject_flag);
+        draw_path(&setup.path, &setup.enemies, &setup.key_points);
+        draw_text_center(&setup.state);
 
         next_frame().await;
     }
 }
 
 fn draw_path(
-    path: Vec<Vector2<f32>>,
-    enemies: Vec<Vector2<f32>>,
-    trajectory_points: Vec<Vector2<f32>>,
+    path: &Vec<Vector2<f32>>,
+    enemies: &Vec<Vector2<f32>>,
+    key_points: &Vec<Vector2<f32>>,
 ) {
     for window in path.windows(2) {
         let a = window[0];
@@ -71,26 +82,24 @@ fn draw_path(
         draw_line(a.x, a.y, b.x, b.y, 2.0, WHITE);
     }
 
-    for point in &path {
+    for point in path {
         draw_circle(point.x as f32, point.y as f32, 5.0, RED);
     }
 
-    for enemy in &enemies {
+    for enemy in enemies {
         draw_circle(enemy.x as f32, enemy.y as f32, 45.0, BLUE);
     }
 
-    for point in &trajectory_points {
+    for point in key_points {
         draw_circle(point.x, point.y, 6.0, GREEN);
     }
 }
 
-fn draw_text_center(enemies_flag: bool, traject_flag: bool) {
-    let text = if !traject_flag {
-        "MOUSELEFT to define start and goal"
-    } else if !enemies_flag {
-        "MOUSERIGHT to define three enemies"
-    } else {
-        "R to reset"
+fn draw_text_center(state: &LoopState) {
+    let text = match state {
+        LoopState::InitialSelection => "MOUSELEFT to define start and goal",
+        LoopState::EnemiesSelection => "MOUSERIGHT to define three enemies",
+        LoopState::Ready => "R to reset",
     };
 
     let font_size = 30.0;

@@ -1,9 +1,24 @@
-use nalgebra::{Vector, Vector2};
+use nalgebra::Vector2;
 
 pub const DIAMETER: f32 = 90.0;
 
+pub enum LoopState {
+    Ready,
+    EnemiesSelection,
+    InitialSelection,
+}
+
 pub struct Environment {
     pub enemies: [Vector2<f32>; 3],
+    // pub field_max: Vector2<f32>,
+    // pub ball: Vector2<f32>,
+}
+pub struct Setup {
+    pub enemies: Vec<Vector2<f32>>,
+    pub path: Vec<Vector2<f32>>,
+    pub key_points: Vec<Vector2<f32>>,
+    pub env: Option<Environment>,
+    pub state: LoopState,
 }
 
 pub fn build_path_plan(
@@ -11,7 +26,7 @@ pub fn build_path_plan(
     trajectory: Vec<Vector2<f32>>,
     depth: i32,
 ) -> Vec<Vector2<f32>> {
-    if depth >= 10 {
+    if depth >= 6 {
         return trajectory;
     }
 
