@@ -25,7 +25,7 @@ async fn main() {
         }
 
         //left mouse to define the 3 enemy robots
-        if is_mouse_button_pressed(MouseButton::Right) && !enemies_flag {
+        if is_mouse_button_pressed(MouseButton::Right) && !enemies_flag && traject_flag {
             enemies.push(Vector2::new(mouse_position().0, mouse_position().1));
 
             if enemies.len() == 3 {
