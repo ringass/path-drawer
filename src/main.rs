@@ -2,6 +2,8 @@ use macroquad::prelude::*;
 use nalgebra::Vector2;
 use path::*;
 
+const COLOR: Color = Color::new(22.0 / 255.0, 24.0 / 255.0, 24.0 / 255.0, 0.91);
+
 #[macroquad::main("STO'x pathplanning")]
 async fn main() {
     let mut setup = Setup {
@@ -13,12 +15,12 @@ async fn main() {
     };
 
     loop {
-        clear_background(Color::new(22.0 / 255.0, 24.0 / 255.0, 24.0 / 255.0, 0.91));
+        clear_background(COLOR);
 
         match setup.state {
             LoopState::InitialSelection => {
                 //left mouse to define start and goal points
-                if is_mouse_button_pressed(MouseButton::Left) {
+                if is_mouse_button_pressed(MouseButton::Left) && free_to_draw(&setup) {
                     setup
                         .key_points
                         .push(Vector2::new(mouse_position().0, mouse_position().1));
@@ -30,7 +32,7 @@ async fn main() {
             }
             LoopState::EnemiesSelection => {
                 //left mouse to define the 3 enemy robots
-                if is_mouse_button_pressed(MouseButton::Right) {
+                if is_mouse_button_pressed(MouseButton::Right) && free_to_draw(&setup) {
                     setup
                         .enemies
                         .push(Vector2::new(mouse_position().0, mouse_position().1));
@@ -85,12 +87,7 @@ fn draw_path(setup: &Setup) {
         }
 
         for point in path {
-            draw_circle(
-                point.x as f32,
-                point.y as f32,
-                5.0,
-                if i == 0 { RED } else { BLUE },
-            );
+            draw_circle(point.x as f32, point.y as f32, 5.0, YELLOW);
         }
     }
 
@@ -98,8 +95,12 @@ fn draw_path(setup: &Setup) {
         draw_circle(enemy.x as f32, enemy.y as f32, 45.0, BLUE);
     }
 
-    for point in &setup.key_points {
-        draw_circle(point.x, point.y, 6.0, GREEN);
+    match (setup.key_points.first(), setup.key_points.last()) {
+        (Some(first), Some(last)) => {
+            draw_circle(first.x, first.y, 6.0, GREEN);
+            draw_circle(last.x, last.y, 6.0, DARKGREEN);
+        }
+        _ => {}
     }
 }
 
@@ -116,4 +117,22 @@ fn draw_text_center(state: &LoopState) {
     let y = 30.0;
 
     draw_text(text, x, y, font_size, YELLOW);
+}
+
+fn free_to_draw(setup: &Setup) -> bool {
+    let mouse_v2 = Vector2::new(mouse_position().0, mouse_position().1);
+
+    for enemy in &setup.enemies {
+        if (mouse_v2 - enemy).norm() < DIAMETER {
+            return false;
+        }
+    }
+
+    for point in &setup.key_points {
+        if (mouse_v2 - point).norm() < 6.0 {
+            return false;
+        }
+    }
+
+    true
 }

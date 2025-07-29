@@ -58,7 +58,7 @@ fn build_path_plan(
         let mut subgoal;
 
         loop {
-            subgoal = search_point(*start, obstacle, direction);
+            subgoal = search_point(*start, obstacle, direction); //sei lá
 
             if !is_point_obstacle(env, subgoal) {
                 break;
@@ -117,7 +117,7 @@ fn is_obstacle(env: &Environment, trajectory: &[Vector2<f32>]) -> Option<Vector2
         let a = window[0];
         let b = window[1];
 
-        let steps = 100;
+        let steps = 150;
         for i in 0..=steps {
             let t = i as f32 / steps as f32;
             let point = a + (b - a) * t;
