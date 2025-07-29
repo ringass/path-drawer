@@ -71,18 +71,8 @@ async fn main() {
 fn draw_path(setup: &Setup) {
     for (i, path) in setup.paths.iter().enumerate() {
         for window in path.windows(2) {
-            let a: nalgebra::Matrix<
-                f32,
-                nalgebra::Const<2>,
-                nalgebra::Const<1>,
-                nalgebra::ArrayStorage<f32, 2, 1>,
-            > = window[0];
-            let b: nalgebra::Matrix<
-                f32,
-                nalgebra::Const<2>,
-                nalgebra::Const<1>,
-                nalgebra::ArrayStorage<f32, 2, 1>,
-            > = window[1];
+            let a = window[0];
+            let b = window[1];
 
             draw_line(a.x, a.y, b.x, b.y, 2.0, if i == 0 { WHITE } else { RED });
         }

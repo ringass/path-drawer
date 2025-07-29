@@ -3,7 +3,7 @@
 Visualization and implementation of STOx's path planning.
 
 <p align="center">
-  <img src="example.png" width="90%" alt="carrossel-caipira-logo" />
+  <img src="example.png" width="90%" alt="stox path"/>
 </p>
 
 ## Instructions

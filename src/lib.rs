@@ -136,7 +136,7 @@ fn is_obstacle(env: &Environment, trajectory: &[Vector2<f32>]) -> Option<Vector2
 
             for enemy in &env.enemies {
                 let distance = (point - enemy).norm();
-                if distance < DIAMETER / 2.0 {
+                if distance < DIAMETER {
                     return Some(*enemy);
                 }
             }
