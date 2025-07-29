@@ -40,6 +40,7 @@ async fn main() {
                     if setup.enemies.len() == 3 && setup.env.is_none() {
                         setup.env = Some(Environment {
                             enemies: [setup.enemies[0], setup.enemies[1], setup.enemies[2]],
+                            field_max: Vector2::new(screen_width(), screen_height()),
                         });
 
                         setup.build_min_path();

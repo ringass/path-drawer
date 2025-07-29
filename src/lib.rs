@@ -10,7 +10,7 @@ pub enum LoopState {
 
 pub struct Environment {
     pub enemies: [Vector2<f32>; 3],
-    // pub field_max: Vector2<f32>,
+    pub field_max: Vector2<f32>,
     // pub ball: Vector2<f32>,
 }
 pub struct Setup {
@@ -46,7 +46,7 @@ fn build_path_plan(
     depth: i32,
     direction: f32,
 ) -> Vec<Vector2<f32>> {
-    if depth >= 6 {
+    if depth >= 2 {
         return trajectory.to_vec();
     }
 
@@ -58,7 +58,7 @@ fn build_path_plan(
         let mut subgoal;
 
         loop {
-            subgoal = search_point(*start, obstacle, direction); //sei lá
+            subgoal = search_point(*start, obstacle, direction);
 
             if !is_point_obstacle(env, subgoal) {
                 break;
@@ -99,12 +99,24 @@ fn search_point(from: Vector2<f32>, obstacle: Vector2<f32>, sign: f32) -> Vector
 }
 
 fn is_point_obstacle(env: &Environment, point: Vector2<f32>) -> bool {
+    //I need to guarantee that the search_point will choose a point inside the field limits
+    // let min_bounds = Vector2::new(0.0, 0.0);
+
+    // if point.x < min_bounds.x
+    //     || point.y < min_bounds.y
+    //     || point.x > env.field_max.x
+    //     || point.y > env.field_max.y
+    // {
+    //     return true;
+    // }
+
     for enemy in &env.enemies {
         let distance = (point - enemy).norm();
         if distance < DIAMETER / 2.0 {
             return true;
         }
     }
+
     false
 }
 
